@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>用量 · TOKEN OBSERVATORY</title>
+<style>
+  :root{
+    --bg:#080d16; --panel:rgba(255,255,255,.045); --panel2:rgba(255,255,255,.07);
+    --stroke:rgba(255,255,255,.10); --stroke2:rgba(255,255,255,.20);
+    --fg:#e9eff8; --dim:#93a2b8; --dim2:#5f6f86;
+    --accent:#4d8dff; --accent2:#7fb0ff; --ok:#35d07f; --warn:#ffc46b; --bad:#ff7b7b;
+    --mono: ui-monospace,"SF Mono","Cascadia Mono",Consolas,monospace; --r:10px;
+  }
+  html{color-scheme:dark}
+  *{box-sizing:border-box}
+  html,body{height:100%;margin:0;background:#080d16 !important;color:var(--fg);
+    font:13px/1.5 "Segoe UI Variable","Segoe UI",system-ui,sans-serif;overflow:hidden}
+  body::before{content:"";position:fixed;inset:0;pointer-events:none;
+    background:radial-gradient(1100px 520px at 10% -10%,rgba(77,141,255,.14),transparent 60%),
+               radial-gradient(800px 400px at 95% 110%,rgba(77,141,255,.07),transparent 60%)}
+  .caps{font-size:9.5px;letter-spacing:.18em;color:var(--dim2);text-transform:uppercase}
+  .app{display:grid;grid-template-rows:52px auto minmax(160px,1fr) auto 26px;height:100%;position:relative;z-index:1}
+
+  .top{display:flex;align-items:center;gap:16px;padding:0 22px;border-bottom:1px solid var(--stroke);
+    background:linear-gradient(180deg,rgba(11,20,33,.9),rgba(8,13,22,.6))}
+  .mark{width:20px;height:20px;border-radius:6px;background:linear-gradient(135deg,#4d8dff,#7fb0ff);
+    box-shadow:0 0 18px rgba(77,141,255,.55);position:relative}
+  .mark::after{content:"";position:absolute;inset:5px;border-radius:3px;background:#080d16}
+  .brand{display:flex;align-items:center;gap:10px}
+  .brand b{font-weight:650;letter-spacing:.1em;font-size:12.5px}
+  .brand small{display:block;line-height:1.1}
+  .stat{display:flex;align-items:center;gap:7px;font-size:11px;color:var(--dim)}
+  .dot{width:6px;height:6px;border-radius:50%;background:var(--ok);box-shadow:0 0 10px rgba(53,208,127,.8)}
+  .dot.idle{background:#4a5568;box-shadow:none}
+  .tools{margin-left:auto;display:flex;gap:8px;align-items:center}
+  .btn{font:inherit;font-size:11px;color:var(--dim);background:var(--panel);border:1px solid var(--stroke);
+    border-radius:8px;padding:5px 11px;cursor:pointer;transition:.16s}
+  .btn:hover{color:#fff;border-color:var(--stroke2);background:var(--panel2)}
+  .btn.on{color:#fff;background:rgba(77,141,255,.22);border-color:rgba(77,141,255,.6)}
+  .seg{display:flex;border:1px solid var(--stroke);border-radius:8px;overflow:hidden}
+  .seg button{font:inherit;font-size:11px;color:var(--dim);background:transparent;border:0;
+    padding:5px 11px;cursor:pointer;transition:.16s}
+  .seg button+button{border-left:1px solid var(--stroke)}
+  .seg button.on{background:rgba(77,141,255,.24);color:#fff}
+
+  .kpis{display:grid;grid-template-columns:repeat(6,1fr);border-bottom:1px solid var(--stroke)}
+  .kpi{padding:12px 18px;border-right:1px solid var(--stroke);position:relative}
+  .kpi:last-child{border-right:0}
+  .kpi .h{font-size:9.5px;letter-spacing:.14em;color:var(--dim2)}
+  .kpi .v{font-family:var(--mono);font-size:23px;color:#fff;margin-top:3px;letter-spacing:-.02em}
+  .kpi .v small{font-size:11px;color:var(--dim2);margin-left:3px}
+  .kpi .s{font-size:9.5px;color:var(--dim2);font-family:var(--mono);margin-top:1px}
+
+  .main{display:grid;grid-template-columns:1fr auto;min-height:0;padding:14px 18px 10px;gap:14px}
+  .chartwrap{border:1px solid var(--stroke);border-radius:var(--r);background:rgba(6,10,17,.55);
+    display:flex;flex-direction:column;min-height:0;position:relative;overflow:hidden}
+  .chart-head{display:flex;align-items:center;gap:10px;padding:10px 14px 0}
+  .chart-head .r{margin-left:auto;font-family:var(--mono);font-size:9.5px;color:var(--dim)}
+  canvas#chart{flex:1;width:100%;min-height:0;display:block;cursor:crosshair}
+  .tip{position:fixed;z-index:40;pointer-events:none;display:none;background:#0d1626;border:1px solid rgba(77,141,255,.5);
+    border-radius:9px;padding:8px 10px;font-size:10.5px;color:#dbe4f0;box-shadow:0 16px 40px rgba(0,0,0,.55);min-width:150px}
+  .tip .d{font-family:var(--mono);color:var(--accent2);font-size:10px}
+  .tip .l{display:flex;justify-content:space-between;gap:14px;margin-top:3px}
+  .tip .l span:last-child{font-family:var(--mono)}
+
+  .drawer{border:1px solid var(--stroke);border-radius:var(--r);background:rgba(6,10,17,.75);
+    width:0;overflow:hidden;transition:width .28s cubic-bezier(.2,.8,.2,1);display:flex;flex-direction:column}
+  .drawer.open{width:340px}
+  .drawer .dh{display:flex;align-items:center;gap:8px;padding:11px 14px;border-bottom:1px solid var(--stroke)}
+  .drawer .dh .x{margin-left:auto;cursor:pointer;color:var(--dim2);font-size:14px}
+  .drawer .dh .x:hover{color:#fff}
+  .drawer .body{overflow:auto;padding:6px 0}
+  .rec{display:grid;grid-template-columns:52px 1fr auto;gap:8px;padding:6px 14px;font-size:10px;
+    border-bottom:1px solid rgba(255,255,255,.045)}
+  .rec .t{color:var(--dim2);font-family:var(--mono)}
+  .rec .m{color:#dbe4f0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .rec .c{font-family:var(--mono);color:var(--dim);text-align:right}
+  .empty{padding:24px 14px;color:var(--dim2);font-size:11px;text-align:center}
+
+  .tblwrap{border-top:1px solid var(--stroke);padding:10px 18px 6px;min-height:0;overflow:auto;height:100%}
+  table{width:100%;border-collapse:collapse;font-size:11px}
+  th{text-align:left;font-weight:400;color:var(--dim2);font-size:9.5px;letter-spacing:.12em;
+    padding:5px 8px;border-bottom:1px solid var(--stroke);position:sticky;top:0;background:#0a1220}
+  td{padding:5px 8px;border-bottom:1px solid rgba(255,255,255,.045);font-family:var(--mono);font-size:10.5px}
+  td.nm{font-family:inherit;color:#dbe4f0}
+  td.num{text-align:right;color:var(--dim)}
+  tr:hover td{background:rgba(77,141,255,.08)}
+  tr.sel td{background:rgba(77,141,255,.16)}
+  .bar{display:block;height:3px;background:rgba(255,255,255,.08);border-radius:2px;overflow:hidden;min-width:50px}
+  .bar>span{display:block;height:100%;background:linear-gradient(90deg,#4d8dff,#7fb0ff)}
+
+  .status{display:flex;align-items:center;gap:16px;padding:0 18px;border-top:1px solid var(--stroke);
+    font-family:var(--mono);font-size:8.5px;color:var(--dim2);letter-spacing:.1em}
+  .status .r{margin-left:auto}
+  ::-webkit-scrollbar{width:5px;height:5px}
+  ::-webkit-scrollbar-thumb{background:rgba(255,255,255,.16);border-radius:3px}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="top">
+    <div class="brand"><div class="mark"></div>
+      <div><b>USAGE</b><small class="caps">Token Observatory</small></div></div>
+    <div class="stat"><span class="dot idle" id="live"></span><span id="liveTxt">连接中…</span></div>
+    <div class="tools">
+      <div class="seg" id="modeSeg">
+        <button data-m="day" class="on">日</button><button data-m="week">周</button><button data-m="month">月</button>
+      </div>
+      <div class="seg" id="rangeSeg">
+        <button data-r="14">14 天</button><button data-r="30" class="on">30 天</button><button data-r="90">90 天</button>
+      </div>
+      <button class="btn" id="btnRefresh">刷新</button>
+      <button class="btn" id="btnLive">实时</button>
+    </div>
+  </div>
+
+  <div class="kpis" id="kpis">
+    <div class="kpi"><div class="h">总输出 TOKEN</div><div class="v" id="kOut">—</div><div class="s" id="kOutS"></div></div>
+    <div class="kpi"><div class="h">总输入 TOKEN</div><div class="v" id="kIn">—</div><div class="s" id="kInS"></div></div>
+    <div class="kpi"><div class="h">缓存命中</div><div class="v" id="kCache">—</div><div class="s" id="kCacheS"></div></div>
+    <div class="kpi"><div class="h">今日输出</div><div class="v" id="kToday">—</div><div class="s" id="kTodayS"></div></div>
+    <div class="kpi"><div class="h">累计花费</div><div class="v" id="kCost">—</div><div class="s" id="kCostS"></div></div>
+    <div class="kpi"><div class="h">QODER CREDITS</div><div class="v" id="kCred">—</div><div class="s" id="kCredS"></div></div>
+  </div>
+
+  <div class="main">
+    <div class="chartwrap">
+      <div class="chart-head">
+        <span class="caps" id="chartTitle">每日输出 token</span>
+        <span class="r" id="chartSum">—</span>
+      </div>
+      <canvas id="chart"></canvas>
+      <div class="tip" id="tip"></div>
+    </div>
+    <div class="drawer" id="drawer">
+      <div class="dh"><span class="caps" id="drawerTitle">当天明细</span><span class="x" id="drawerX">✕</span></div>
+      <div class="body" id="drawerBody"><div class="empty">点柱子看当天明细</div></div>
+    </div>
+  </div>
+
+  <div class="tblwrap">
+    <table id="tbl">
+      <thead><tr><th id="th1">日期</th><th>输出 tok</th><th>输入</th><th>缓存</th><th>次数</th><th>花费</th><th style="width:110px">占比</th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <div class="status">
+    <span>● LIVE / READ-ONLY</span><span id="stBudget">BUDGET —</span>
+    <span id="stSel">未选择日期</span><span class="r" id="clock">--:--:--</span>
+  </div>
+</div>
+
+<script>
+const V = new URLSearchParams(location.search).get('v') || '1';
+const ENGINE = location.origin.startsWith('http') ? location.origin : 'http://127.0.0.1:8765';
+const $ = s => document.querySelector(s);
+const fmt = n => (n || 0).toLocaleString('en-US');
+
+let mode = localStorage.getItem('usage_mode') || 'day';
+let range = 30;   // 固定默认 30 天，不读缓存（跨 iframe 会串味）
+let usage = null, buckets = [], selKey = null, hoverIdx = -1, live = true;
+let lastFetch = 0;
+
+/* 金额：两位小数，不足一分显示 <¥0.01 */
+function money(v) {
+  v = Number(v) || 0;
+  if (v <= 0) return '¥0.00';
+  if (v < 0.005) return '<¥0.01';
+  return '¥' + v.toFixed(2);
+}
+const jget = p => fetch(ENGINE + p).then(r => r.json());
+
+function setLive(ok) {
+  $('#live').className = 'dot' + (ok ? '' : ' idle');
+  $('#liveTxt').textContent = ok ? '本机引擎已连接' : '引擎未连接';
+}
+
+/* ---------- 聚合 ---------- */
+function keyOf(day) {
+  if (mode === 'month') return day.slice(0, 7);
+  if (mode === 'week') {
+    const d = new Date(day + 'T00:00:00');
+    const t = new Date(d.getFullYear(), 0, 1);
+    const w = Math.ceil(((d - t) / 86400000 + t.getDay() + 1) / 7);
+    return day.slice(0, 4) + '-W' + String(w).padStart(2, '0');
+  }
+  return day;
+}
+
+function buildBuckets(u) {
+  const byDay = u.by_day || {};
+  const byDayBackend = u.by_day_backend || {};
+  const map = new Map();
+  Object.entries(byDay).forEach(([day, g]) => {
+    const k = keyOf(day);
+    const cur = map.get(k) || { key: k, out: 0, in: 0, cache: 0, cost: 0, calls: 0, days: [], parts: {} };
+    cur.out += g.out || 0; cur.in += g.in || 0; cur.cache += g.cache || 0;
+    cur.cost += g.cost || 0; cur.calls += g.calls || 0; cur.days.push(day);
+    Object.entries(byDayBackend[day] || {}).forEach(([bk, v]) => {
+      const p = cur.parts[bk] || { out: 0, cost: 0, calls: 0 };
+      p.out += v.out || 0; p.cost += v.cost || 0; p.calls += v.calls || 0;
+      cur.parts[bk] = p;
+    });
+    map.set(k, cur);
+  });
+  const all = [...map.values()].sort((a, b) => a.key < b.key ? -1 : 1);
+  return all.slice(-range);
+}
+
+/* ---------- KPI ---------- */
+function renderKpis(u) {
+  const t = u.totals || {}, c = u.credits || {};
+  const today = new Date().toISOString().slice(0, 10);
+  const tb = (u.by_day || {})[today] || { out: 0 };
+  const hit = (t.in + t.cache) ? (t.cache / (t.in + t.cache) * 100) : 0;
+  $('#kOut').innerHTML = fmt(t.out) + '<small>tok</small>';
+  $('#kIn').innerHTML = fmt(t.in) + '<small>tok</small>';
+  $('#kCache').innerHTML = fmt(t.cache) + '<small>tok</small>';
+  $('#kToday').innerHTML = fmt(tb.out) + '<small>tok</small>';
+  $('#kCost').textContent = money(t.cost);
+  $('#kCred').textContent = (c.total || 0).toFixed(2);
+  $('#kOutS').textContent = `${fmt(t.calls)} 次调用`;
+  $('#kInS').textContent = '按未命中计费';
+  $('#kCacheS').textContent = `${hit.toFixed(1)}% 命中率`;
+  $('#kTodayS').textContent = today.slice(5);
+  $('#kCostS').textContent = '人民币';
+  $('#kCredS').textContent = `${c.calls || 0} 次 · 非人民币`;
+  const b = u.budget || {};
+  $('#stBudget').textContent = b.cap
+    ? `BUDGET ${money(b.spent)} / ¥${b.cap} · 今日` : 'BUDGET —';
+}
+
+/* ---------- 图表 ---------- */
+const cv = $('#chart'), ctx = cv.getContext('2d');
+function sizeCanvas() {
+  const r = cv.getBoundingClientRect();
+  const dpr = Math.min(devicePixelRatio || 1, 2);
+  cv.width = Math.max(1, r.width * dpr); cv.height = Math.max(1, r.height * dpr);
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  return { w: r.width, h: r.height };
+}
+
+function drawChart() {
+  const { w, h } = sizeCanvas();
+  ctx.clearRect(0, 0, w, h);
+  if (!buckets.length) { ctx.fillStyle = '#5f6f86'; ctx.font = '12px sans-serif'; ctx.fillText('暂无数据', 16, 28); return; }
+
+  const pad = { l: 46, r: 14, t: 14, b: 28 };
+  const iw = w - pad.l - pad.r, ih = h - pad.t - pad.b;
+  const keys = V === '2' ? [...new Set(buckets.flatMap(b => Object.keys(b.parts)))] : [];
+  const stackMax = keys.length
+    ? Math.max(...buckets.map(b => Object.values(b.parts).reduce((s, p) => s + (p.out || 0), 0)), 1)
+    : Math.max(...buckets.map(b => b.out || 0), 1);
+  const maxV = V === '3' ? Math.max(stackMax, Math.max(...buckets.map(b => b.cost * 1000), 1)) : stackMax;
+
+  ctx.font = '9px ui-monospace,monospace'; ctx.fillStyle = '#465468'; ctx.textAlign = 'right';
+  for (let i = 0; i <= 4; i++) {
+    const y = pad.t + ih * i / 4;
+    ctx.strokeStyle = 'rgba(255,255,255,.06)';
+    ctx.beginPath(); ctx.moveTo(pad.l, y); ctx.lineTo(w - pad.r, y); ctx.stroke();
+    ctx.fillText(fmt(Math.round(maxV * (1 - i / 4))), pad.l - 8, y + 3);
+  }
+
+  const bw = iw / buckets.length;
+  const barW = Math.max(4, Math.min(52, bw * 0.68));
+  buckets.forEach((b, i) => {
+    const x = pad.l + i * bw + (bw - barW) / 2;
+    const isSel = b.key === selKey, isHover = i === hoverIdx;
+
+    if (V === '2') {
+      let y0 = pad.t + ih;
+      keys.forEach((k, ki) => {
+        const v = (b.parts[k] || {}).out || 0;
+        const bh = v / maxV * ih;
+        if (bh <= 0) return;
+        const hue = 205 + ki * 22;
+        ctx.fillStyle = `hsla(${hue},85%,${62 - ki * 4}%,${isHover || isSel ? .95 : .72})`;
+        ctx.fillRect(x, y0 - bh, barW, bh);
+        y0 -= bh;
+      });
+    } else {
+      const bh = Math.max(1, (b.out || 0) / maxV * ih);
+      const g = ctx.createLinearGradient(0, pad.t + ih - bh, 0, pad.t + ih);
+      g.addColorStop(0, isHover || isSel ? '#8fbaff' : '#4d8dff');
+      g.addColorStop(1, 'rgba(77,141,255,.18)');
+      ctx.fillStyle = g;
+      ctx.fillRect(x, pad.t + ih - bh, barW, bh);
+    }
+
+    if (isSel) { ctx.strokeStyle = 'rgba(200,225,255,.85)'; ctx.lineWidth = 1; ctx.strokeRect(x - 1, pad.t, barW + 2, ih); }
+    if (isHover) { ctx.fillStyle = 'rgba(255,255,255,.06)'; ctx.fillRect(pad.l + i * bw, pad.t, bw, ih); }
+
+    ctx.fillStyle = isSel ? '#cfe0ff' : '#465468'; ctx.textAlign = 'center';
+    const step = Math.ceil(buckets.length / 12);
+    if (i % step === 0) ctx.fillText(b.key.slice(5), x + barW / 2, h - 10);
+  });
+
+  if (V === '3') {
+    ctx.beginPath();
+    buckets.forEach((b, i) => {
+      const x = pad.l + i * bw + bw / 2;
+      const y = pad.t + ih - (b.cost * 1000) / maxV * ih;
+      i ? ctx.lineTo(x, y) : ctx.moveTo(x, y);
+    });
+    ctx.strokeStyle = 'rgba(255,196,107,.9)'; ctx.lineWidth = 1.6; ctx.stroke();
+  }
+
+  if (V === '2' && keys.length) {
+    let lx = pad.l + 4;
+    ctx.font = '9px ui-monospace,monospace'; ctx.textAlign = 'left';
+    keys.forEach((k, ki) => {
+      const hue = 205 + ki * 22;
+      ctx.fillStyle = `hsla(${hue},85%,62%,.95)`;
+      ctx.fillRect(lx, pad.t + 2, 8, 8);
+      ctx.fillStyle = '#93a2b8'; ctx.fillText(k, lx + 12, pad.t + 9);
+      lx += 16 + ctx.measureText(k).width;
+    });
+  }
+
+  const sum = buckets.reduce((s, b) => s + (b.out || 0), 0);
+  $('#chartSum').textContent = `${buckets.length} 个${mode === 'day' ? '日' : mode === 'week' ? '周' : '月'} · 合计 ${fmt(sum)} tok`;
+}
+
+function hitTest(ev) {
+  const r = cv.getBoundingClientRect();
+  const x = ev.clientX - r.left;
+  if (!buckets.length) return -1;
+  const pad = { l: 46, r: 14 };
+  const iw = r.width - pad.l - pad.r, bw = iw / buckets.length;
+  const i = Math.floor((x - pad.l) / bw);
+  return (i >= 0 && i < buckets.length) ? i : -1;
+}
+
+cv.addEventListener('mousemove', ev => {
+  const i = hitTest(ev);
+  if (i !== hoverIdx) { hoverIdx = i; drawChart(); }
+  const tip = $('#tip');
+  if (i < 0) { tip.style.display = 'none'; return; }
+  const b = buckets[i];
+  tip.innerHTML = `<div class="d">${b.key}</div>
+    <div class="l"><span>输出</span><span>${fmt(b.out)} tok</span></div>
+    <div class="l"><span>输入</span><span>${fmt(b.in)} tok</span></div>
+    <div class="l"><span>调用</span><span>${b.calls} 次</span></div>
+    <div class="l"><span>花费</span><span>${money(b.cost)}</span></div>`;
+  tip.style.display = 'block';
+  tip.style.left = Math.min(window.innerWidth - 190, ev.clientX + 14) + 'px';
+  tip.style.top = Math.max(8, ev.clientY - 70) + 'px';
+});
+cv.addEventListener('mouseleave', () => { hoverIdx = -1; $('#tip').style.display = 'none'; drawChart(); });
+cv.addEventListener('click', ev => {
+  const i = hitTest(ev);
+  if (i < 0) return;
+  selectBucket(buckets[i]);
+});
+
+/* ---------- 当天明细 ---------- */
+async function selectBucket(b) {
+  selKey = b.key;
+  $('#drawer').classList.add('open');
+  $('#drawerTitle').textContent = b.key + ' · 明细';
+  $('#stSel').textContent = '已选 ' + b.key;
+  drawChart();
+  $('#drawerBody').innerHTML = '<div class="empty">读取中…</div>';
+  const day = b.days[b.days.length - 1];
+  try {
+    const d = await jget('/api/ledger?day=' + (mode === 'day' ? b.key : day) + '&limit=80');
+    const recs = d.records || [];
+    if (!recs.length) { $('#drawerBody').innerHTML = '<div class="empty">这一天没有调用记录</div>'; return; }
+    const sumCost = recs.reduce((a, r) => a + (r.cost_cny || 0), 0);
+    const sumCred = recs.reduce((a, r) => a + (r.credits || 0), 0);
+    const head = `<div style="padding:8px 14px 10px;border-bottom:1px solid rgba(255,255,255,.06)">
+        <div style="font-family:var(--mono);font-size:11px;color:#dbe4f0">${recs.length} 次调用 · ${money(sumCost)}${sumCred ? ' · ' + sumCred.toFixed(2) + ' cr' : ''}</div>
+      </div>`;
+    $('#drawerBody').innerHTML = head + recs.map(r => `
+      <div class="rec">
+        <span class="t">${(r.ts || '').slice(11, 19)}</span>
+        <span class="m">${r.model || r.backend || ''}</span>
+        <span class="c">${r.credits ? r.credits.toFixed(2) + ' cr' : money(r.cost_cny)}</span>
+      </div>`).join('');
+  } catch (e) { $('#drawerBody').innerHTML = '<div class="empty">读取失败</div>'; }
+}
+$('#drawerX').onclick = () => {
+  $('#drawer').classList.remove('open'); selKey = null; $('#stSel').textContent = '未选择日期'; drawChart();
+};
+
+/* ---------- 下方表格 ---------- */
+function renderTable() {
+  const rows = [...buckets].reverse();
+  const maxOut = Math.max(...rows.map(r => r.out || 0), 1);
+  document.querySelector('#tbl tbody').innerHTML = rows.map(b => `
+    <tr data-k="${b.key}" class="${b.key === selKey ? 'sel' : ''}">
+      <td class="nm">${b.key}</td>
+      <td class="num">${fmt(b.out)}</td><td class="num">${fmt(b.in)}</td>
+      <td class="num">${fmt(b.cache)}</td><td class="num">${b.calls}</td>
+      <td class="num">${money(b.cost)}</td>
+      <td><span class="bar"><span style="width:${Math.max(1, b.out / maxOut * 100)}%"></span></span></td>
+    </tr>`).join('') || '<tr><td colspan="7" style="color:#5f6f86;padding:14px">还没有调用记录</td></tr>';
+  document.querySelectorAll('#tbl tbody tr[data-k]').forEach(tr => {
+    tr.onclick = () => {
+      const b = buckets.find(x => x.key === tr.dataset.k);
+      if (b) selectBucket(b);
+    };
+  });
+}
+
+async function load() {
+  try {
+    usage = await jget('/api/usage');
+    buckets = buildBuckets(usage);
+    renderKpis(usage); drawChart(); renderTable(); setLive(true);
+    $('#chartTitle').textContent = V === '2' ? '每日输出 token · 按后端堆叠'
+      : V === '3' ? '每日输出 token · 花费折线' : '每日输出 token';
+    lastFetch = Date.now();
+  } catch (e) { setLive(false); }
+}
+
+/* ---------- 交互 ---------- */
+$('#modeSeg').querySelectorAll('button').forEach(b => b.onclick = () => {
+  mode = b.dataset.m;
+  $('#modeSeg').querySelectorAll('button').forEach(x => x.classList.toggle('on', x === b));
+  buckets = buildBuckets(usage || {}); selKey = null; drawChart(); renderTable();
+});
+$('#rangeSeg').querySelectorAll('button').forEach(b => b.onclick = () => {
+  range = Number(b.dataset.r);
+  $('#rangeSeg').querySelectorAll('button').forEach(x => x.classList.toggle('on', x === b));
+  buckets = buildBuckets(usage || {}); drawChart(); renderTable();
+});
+$('#btnRefresh').onclick = load;
+$('#btnLive').onclick = e => { live = !live; e.target.classList.toggle('on', live); };
+addEventListener('resize', () => drawChart());
+setInterval(() => { $('#clock').textContent = new Date().toTimeString().slice(0, 8); }, 1000);
+setInterval(() => { if (live && Date.now() - lastFetch > 8000) load(); }, 10000);
+
+// 初始化按钮状态
+$('#modeSeg').querySelectorAll('button').forEach(b => b.classList.toggle('on', b.dataset.m === mode));
+$('#rangeSeg').querySelectorAll('button').forEach(b => b.classList.toggle('on', Number(b.dataset.r) === range));
+$('#btnLive').classList.add('on');
+load();
+</script>
+</body>
+</html>

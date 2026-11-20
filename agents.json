@@ -1,0 +1,82 @@
+{
+  "version": 1,
+  "agents": [
+    {
+      "id": "speed",
+      "name": "速记",
+      "emoji": "⚡",
+      "backend": "local-4b",
+      "app": "本地 Ollama",
+      "role": "快速抓要点、列提纲、拆步骤。回答简短，不展开论证。",
+      "enabled": true,
+      "color": "#8b5cf6",
+      "skills": [
+        "humanizer"
+      ]
+    },
+    {
+      "id": "writer",
+      "name": "助手",
+      "emoji": "✍️",
+      "backend": "local-9b",
+      "app": "本地 Ollama",
+      "role": "把要点写成通顺的中文段落，负责表达清晰。",
+      "enabled": true,
+      "color": "#0ea5e9"
+    },
+    {
+      "id": "engineer",
+      "name": "工程",
+      "emoji": "🛠️",
+      "backend": "deepseek-flash",
+      "app": "DeepSeek API",
+      "role": "给可执行的方案、代码、命令，注意边界条件。",
+      "enabled": true,
+      "color": "#22c55e"
+    },
+    {
+      "id": "reviewer",
+      "name": "评审",
+      "emoji": "🔍",
+      "backend": "deepseek-pro",
+      "app": "DeepSeek API",
+      "role": "挑错、找风险、指出别人方案里没考虑到的点。不要重复别人说过的话。",
+      "enabled": true,
+      "color": "#f59e0b"
+    },
+    {
+      "id": "qoder",
+      "name": "Qoder",
+      "emoji": "🧩",
+      "backend": "qoder",
+      "app": "Qoder CN",
+      "transport": "qoder-cli",
+      "enabled": true,
+      "color": "#ec4899",
+      "role": "Qoder CN 的模型（走官方 CLI），擅长写代码、读仓库、给可运行实现。",
+      "wait": 60,
+      "note": "消耗 Qoder Credits",
+      "model": "Qwen3.8-Flash",
+      "max_turns": 1,
+      "models": [
+        "Auto",
+        "Fast",
+        "Qwen4-Max",
+        "Qwen4-Max-Preview",
+        "Qwen3.8-Max",
+        "Qwen3.8-Flash",
+        "DeepSeek-V4-Pro",
+        "DeepSeek-Flash",
+        "GLM-5.3",
+        "GLM-5.3-Flash",
+        "Kimi-K3.1-Pro",
+        "Kimi-K2.8-Preview",
+        "Step-5-Preview",
+        "MiniMax-M3.1-Flash",
+        "qwen3.5:4b-64k",
+        "DeepSeek V4.1 Flash",
+        "qwen3.5:9b-64k"
+      ]
+    }
+  ]
+}

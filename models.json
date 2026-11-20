@@ -1,0 +1,212 @@
+{
+  "version": 1,
+  "usd_cny": 7.15,
+  "paths": {
+    "root": "${ROOT}",
+    "ledger": "${ROOT}/ledger.jsonl",
+    "ingest_state": "${ROOT}/ingest-state.json",
+    "widget": "${ROOT}/widget.html"
+  },
+  "routing": {
+    "tiers": {
+      "simple": "local-4b",
+      "medium": "local-9b",
+      "complex": "deepseek-flash",
+      "heavy": "deepseek-pro"
+    },
+    "simple_max_chars": 260,
+    "medium_max_chars": 1400,
+    "keywords_complex": [
+      "重构",
+      "架构",
+      "多文件",
+      "调试",
+      "并行",
+      "部署",
+      "测试",
+      "研究报告",
+      "文献",
+      "方案",
+      "对比",
+      "幻灯片",
+      "ppt",
+      "refactor",
+      "architecture",
+      "debug",
+      "multi-file",
+      "benchmark",
+      "migrate"
+    ],
+    "keywords_medium": [
+      "分析",
+      "总结",
+      "代码",
+      "脚本",
+      "翻译",
+      "邮件",
+      "表格",
+      "excel",
+      "summary",
+      "explain",
+      "write",
+      "code"
+    ]
+  },
+  "backends": {
+    "local-4b": {
+      "label": "本地 Qwen3.5-4B",
+      "kind": "ollama",
+      "base_url": "http://127.0.0.1:11434",
+      "model": "qwen3.5:4b-64k",
+      "num_ctx": 65536,
+      "tiers": [
+        "simple"
+      ],
+      "price_usd": {
+        "in": 0,
+        "out": 0
+      },
+      "notes": "免费本地；适合分类、抽取、短问答、草稿",
+      "think": false,
+      "max_tokens": 1024,
+      "timeout": 240
+    },
+    "local-9b": {
+      "label": "本地 Qwen3.5-9B",
+      "kind": "ollama",
+      "base_url": "http://127.0.0.1:11434",
+      "model": "qwen3.5:9b-64k",
+      "num_ctx": 65536,
+      "tiers": [
+        "medium"
+      ],
+      "price_usd": {
+        "in": 0,
+        "out": 0
+      },
+      "notes": "免费本地；适合中等长度写作/代码解释",
+      "think": false,
+      "max_tokens": 1024,
+      "timeout": 240
+    },
+    "deepseek-flash": {
+      "label": "DeepSeek V4.1 Flash (API)",
+      "kind": "openai",
+      "base_url": "https://api.deepseek.com/v1",
+      "model": "deepseek-flash",
+      "key_env": "DEEPSEEK_API_KEY",
+      "tiers": [
+        "complex"
+      ],
+      "price_usd": {
+        "cache": 0.003,
+        "in": 0.15,
+        "out": 0.6
+      },
+      "peak_multiplier": 2.0,
+      "max_tokens": 24000,
+      "notes": "便宜、1M 上下文、支持图片；复杂主力",
+      "timeout": 180,
+      "thinking": false
+    },
+    "deepseek-pro": {
+      "label": "DeepSeek V4-Pro (API)",
+      "kind": "openai",
+      "base_url": "https://api.deepseek.com/v1",
+      "model": "deepseek-v4-pro",
+      "key_env": "DEEPSEEK_API_KEY",
+      "tiers": [
+        "heavy"
+      ],
+      "price_usd": {
+        "cache": 0.022,
+        "in": 0.66,
+        "out": 1.98
+      },
+      "peak_multiplier": 2.0,
+      "max_tokens": 24000,
+      "notes": "最贵；留给最难的推理/长文综合",
+      "timeout": 180,
+      "thinking": false
+    },
+    "workbuddy": {
+      "label": "WorkBuddy / CodeBuddy 桌面",
+      "kind": "app",
+      "app": "workbuddy",
+      "tiers": [
+        "complex"
+      ],
+      "notes": "通过 ~/.codebuddy/models.json 注入模型；任务用 handoff 交付"
+    },
+    "qoder": {
+      "label": "Qoder (IDE/CLI)",
+      "kind": "app",
+      "app": "qoder",
+      "tiers": [
+        "complex"
+      ],
+      "notes": "IDE 内自定义模型用 UI 配置；CLI 安装 npm i -g @qoder-ai/qodercli 后可 /model"
+    },
+    "dsh": {
+      "label": "DeepSeek Harness 桌面",
+      "kind": "app",
+      "app": "dsh",
+      "tiers": [
+        "complex"
+      ],
+      "notes": "自带 usage-ledger，可 ingest 真实用量"
+    }
+  },
+  "apps": {
+    "workbuddy": {
+      "name": "WorkBuddy",
+      "exe": "${HOME}/Apps/WorkBuddy/WorkBuddy.exe",
+      "models_json": "${HOME}/.codebuddy/models.json",
+      "configure": "file",
+      "usage_file": null,
+      "workspace": "${HOME}/Apps/Hermes工作区",
+      "composer_xy": [
+        0.55,
+        0.42
+      ]
+    },
+    "qoder": {
+      "name": "Qoder CN",
+      "exe": "${HOME}/Apps/Qoder CN/Qoder CN.exe",
+      "ide_exe": "${HOME}/Apps/Qoder CN IDE/Qoder CN IDE.exe",
+      "models_json": "${HOME}/.qoder-cn/.models/default",
+      "configure": "file-partial",
+      "usage_file": null,
+      "settings_json": "${HOME}/.qoder-cn/settings.json",
+      "note": "BYOK providers 在 settings.providers；当前已接 ollama 4b/9b",
+      "workspace": "${HOME}/Apps/Hermes工作区",
+      "composer_xy": [
+        0.48,
+        0.82
+      ]
+    },
+    "dsh": {
+      "name": "DeepSeek Harness",
+      "exe": "${HOME}/Apps/Deepseek Harness/DeepSeek Harness.exe",
+      "configure": "ui",
+      "usage_file": "${HOME}/.dsh/dsh-usage/usage-ledger.json",
+      "workspace": "${HOME}/Apps/Hermes工作区",
+      "composer_xy": [
+        0.5,
+        0.85
+      ]
+    },
+    "doubao": {
+      "name": "豆包",
+      "exe": "${HOME}/Apps/Doubao/Doubao.exe",
+      "configure": "none",
+      "usage_file": null,
+      "disabled": true
+    }
+  },
+  "budget": {
+    "cny": 10.0,
+    "period": "day",
+    "hard": true
+  }
+}

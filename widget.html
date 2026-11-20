@@ -1,0 +1,33 @@
+<!doctype html><html lang="zh"><head><meta charset="utf-8"><title>模型用量</title></head>
+<style>
+  body{margin:0;font-family:inherit;color:var(--foreground,#1f2328)}
+  .wrap{display:flex;flex-direction:column;gap:14px;min-width:520px}
+  .kpis{display:flex;gap:10px;flex-wrap:wrap}
+  .kpi{border:1px solid var(--border,#333);border-radius:10px;padding:10px 14px;min-width:104px;background:var(--card,transparent)}
+  .kpi b{display:block;font-size:19px;font-variant-numeric:tabular-nums;font-weight:650;letter-spacing:-.02em}
+  .kpi span{font-size:11px;color:var(--muted-foreground,#9aa)}
+  .spark{display:flex;gap:6px;align-items:flex-end;height:84px;border:1px solid var(--border,#333);border-radius:10px;padding:10px}
+  .bar{display:flex;flex-direction:column;align-items:center;gap:4px;flex:1}
+  .bar span{width:100%;background:var(--accent,#7aa2f7);border-radius:3px 3px 0 0;display:block}
+  .bar em{font-size:9px;font-style:normal;color:var(--muted-foreground,#9aa)}
+  table{border-collapse:collapse;width:100%;font-size:12px}
+  th{text-align:left;font-weight:600;color:var(--muted-foreground,#9aa);border-bottom:1px solid var(--border,#333);padding:6px 8px}
+  td{padding:6px 8px;border-bottom:1px solid color-mix(in oklab,var(--border,#333) 55%,transparent)}
+  td.n{text-align:right;font-variant-numeric:tabular-nums}
+  .meter{height:5px;border-radius:3px;background:color-mix(in oklab,var(--border,#333) 18%,transparent);min-width:70px}
+  .meter i{display:block;height:100%;border-radius:3px;background:var(--accent,#7aa2f7)}
+  .foot{font-size:10px;color:var(--muted-foreground,#9aa);display:flex;justify-content:space-between}
+</style>
+<div class="wrap">
+  <div class="kpis">
+    <div class="kpi"><b>¥18.9904</b><span>近 30 天花费</span></div>
+    <div class="kpi"><b>280,523,938</b><span>输入 tokens(+缓存)</span></div>
+    <div class="kpi"><b>1,401,421</b><span>输出 tokens</span></div>
+    <div class="kpi"><b>29</b><span>调用次数</span></div>
+    <div class="kpi"><b>¥3.61</b><span>预算剩余 / ¥10.00</span></div>
+  </div>
+  <div class="spark"><div class="bar" title="2026-11-04"><span style="height:64px"></span><em>11-04</em></div><div class="bar" title="2026-11-05"><span style="height:3px"></span><em>11-05</em></div><div class="bar" title="2026-11-07"><span style="height:3px"></span><em>11-07</em></div><div class="bar" title="2026-11-08"><span style="height:3px"></span><em>11-08</em></div><div class="bar" title="2026-11-11"><span style="height:3px"></span><em>11-11</em></div><div class="bar" title="2026-11-15"><span style="height:11px"></span><em>11-15</em></div><div class="bar" title="2026-11-16"><span style="height:3px"></span><em>11-16</em></div></div>
+  <table><thead><tr><th>模型</th><th class="n">调用</th><th class="n">输入</th><th class="n">缓存</th><th class="n">输出</th><th class="n">花费</th><th>占比</th></tr></thead>
+  <tbody><tr><td>deepseek-flash</td><td class="n">16</td><td class="n">4,790,916</td><td class="n">255,576,064</td><td class="n">1,071,099</td><td class="n">¥18.9904</td><td><div class="meter"><i style="width:100%"></i></div></td></tr><tr><td>qwen3.5:4b-64k</td><td class="n">3</td><td class="n">56</td><td class="n">0</td><td class="n">1,559</td><td class="n">—</td><td><div class="meter"><i style="width:0%"></i></div></td></tr><tr><td>qwen3.5:9b-64k</td><td class="n">2</td><td class="n">284</td><td class="n">0</td><td class="n">5,024</td><td class="n">—</td><td><div class="meter"><i style="width:0%"></i></div></td></tr><tr><td>auto</td><td class="n">7</td><td class="n">4,946,118</td><td class="n">15,206,400</td><td class="n">321,405</td><td class="n">—</td><td><div class="meter"><i style="width:0%"></i></div></td></tr><tr><td>qwen3.5:4b</td><td class="n">1</td><td class="n">4,100</td><td class="n">0</td><td class="n">2,334</td><td class="n">—</td><td><div class="meter"><i style="width:0%"></i></div></td></tr></tbody></table>
+  <div class="foot"><span>mbus · 峰值×2 / 本地免费</span><span>2026-11-16 23:10</span></div>
+</div></html>

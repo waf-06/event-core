@@ -1,0 +1,29 @@
+# 运行时数据（不要提交）
+ledger.jsonl
+rooms/
+shots/
+*.log
+.last_room*
+inventory*.json
+inventory-snapshot.json
+watchdog.log
+.cache/
+__pycache__/
+*.pyc
+
+# 本机私有配置
+.env
+secrets.json
+bindings.json
+
+# 二进制 / 第三方
+cua/
+*.exe
+node_modules/
+
+# 备份
+*.bak
+dispatch.legacy.html
+
+# 本机专属路径（技能库/工作区），不进仓库
+local.json
